@@ -1,6 +1,19 @@
-# LIGHTNYU landing page
-Cloudflare Pages production domain: lightnyu.co.uk.
+# Anatolii Private Club — version 14
 
-Production settings: D1 binding DB; encrypted secret TURNSTILE_SECRET_KEY; plaintext public variables WAITLIST_CONTROLLER_NAME and WAITLIST_CONTACT_EMAIL (the real operator and monitored privacy contact, both shown publicly in the privacy notice). Redeploy after changing bindings. The subscribers table is initialized automatically after a valid Turnstile response. No SQL setup required. Review the privacy notice, actual retention commitments and Cloudflare processing/transfer terms before public promotion.
+This branch contains the prepared portfolio deployment. It is separate from this repository's LIGHTNYU production branch.
 
-Registration records unverified interest only. No launch email or verification email is sent. Implement email ownership confirmation and unsubscribe management before sending any promotional email. No public software routes or subscriber read endpoint.
+## Cloudflare Pages settings
+
+- Project name: `anatolii-private-club`
+- Repository: `Lightnyu/lightnyu-website`
+- Production branch: `anatolii-private-club`
+- Framework preset: None
+- Build command: `exit 0`
+- Build output directory: `/`
+- Root directory: leave empty
+
+Create a D1 database named `anatolii-private-club-enquiries`. In this new Pages project's production settings, bind it as `ANATOLII_DB`, then redeploy. The form creates its enquiry table after the first valid submission. The dedicated binding keeps its records separate from LIGHTNYU.
+
+Add `anatoliiprivate.club` under this new project's Custom domains. If the domain is already an active Cloudflare zone, Cloudflare can add the required DNS record automatically. The previous ChatGPT Sites domain attachment is separate from this deployment.
+
+The page and browser assets come from version 14. The enquiries API preserves its validation and consent rules. No database records, tokens, or other credentials are included in this branch. Until the dedicated database is bound, submissions show an unavailable message and do not claim to have been stored.
