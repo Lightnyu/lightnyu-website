@@ -1,10 +1,11 @@
+import { privacyDetails } from "../lib/privacy-details.js";
 const HOST="lightnyu.co.uk";
 const CONSENT_VERSION="launch-email-only-v1";
 const respond=(status,data)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 export async function onRequest({request,env}){
  if(request.method!=="POST")return respond(405,{error:"Method not allowed."});
  if(new URL(request.url).hostname!==HOST||request.headers.get("Origin")!=="https://"+HOST)return respond(403,{error:"Please register on the official Lightnyu website."});
- if(!env.DB||!env.TURNSTILE_SECRET_KEY)return respond(503,{error:"Registration is temporarily unavailable. Please try again later."});
+ if(!env.DB||!env.TURNSTILE_SECRET_KEY||!privacyDetails(env))return respond(503,{error:"Registration is temporarily unavailable. Please try again later."});
  if(!/^application\/json(?:\s*;|$)/i.test(request.headers.get("Content-Type")||""))return respond(415,{error:"Invalid request."});
  let data;
  try{
@@ -26,6 +27,7 @@ export async function onRequest({request,env}){
   if(!result.ok)return respond(503,{error:"Security check unavailable. Please try again."});
   const verify=await result.json();
   if(verify.success!==true||verify.hostname!==HOST||verify.action!=="waitlist")return respond(403,{error:"Security check failed or expired. Please try again."});
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS subscribers (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL COLLATE NOCASE UNIQUE, consent_version TEXT NOT NULL, created_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'unverified' CHECK (status IN ('unverified','confirmed','unsubscribed')))").run();
   await env.DB.prepare("INSERT INTO subscribers(email,consent_version,created_at,status) VALUES(?,?,?,?) ON CONFLICT(email) DO NOTHING").bind(email,CONSENT_VERSION,new Date().toISOString(),"unverified").run();
   return respond(200,{ok:true});
  }catch{return respond(503,{error:"Registration could not be saved. Please try again later."});}
